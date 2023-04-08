@@ -11,6 +11,7 @@
 		2767ECEF29E149F60024A5D0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2767ECEE29E149F60024A5D0 /* ContentView.swift */; };
 		2767ECF129E149FA0024A5D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2767ECF029E149FA0024A5D0 /* Assets.xcassets */; };
 		2767ECF429E149FA0024A5D0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2767ECF329E149FA0024A5D0 /* Preview Assets.xcassets */; };
+		2767ECFC29E1500B0024A5D0 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,7 @@
 		2767ECEE29E149F60024A5D0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		2767ECF029E149FA0024A5D0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2767ECF329E149FA0024A5D0 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +53,7 @@
 		2767ECEB29E149F60024A5D0 /* rinse */ = {
 			isa = PBXGroup;
 			children = (
+				2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */,
 				2767ECEC29E149F60024A5D0 /* rinseApp.swift */,
 				2767ECEE29E149F60024A5D0 /* ContentView.swift */,
 				2767ECF029E149FA0024A5D0 /* Assets.xcassets */,
@@ -138,6 +141,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2767ECEF29E149F60024A5D0 /* ContentView.swift in Sources */,
+				2767ECFC29E1500B0024A5D0 /* BluetoothManager.swift in Sources */,
 				2767ECED29E149F60024A5D0 /* rinseApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -269,6 +273,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"rinse/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = rinse/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Our app requires Bluetooth to connect to the sensor tracker";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -297,6 +303,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"rinse/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = rinse/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Our app requires Bluetooth to connect to the sensor tracker";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

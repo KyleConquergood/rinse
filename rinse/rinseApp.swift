@@ -9,6 +9,7 @@ import SwiftUI
 
 @main
 struct rinseApp: App {
+    // Instantiate ContentView as the main view of the app
     var body: some Scene {
         WindowGroup {
             ContentView()
