@@ -17,6 +17,8 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     private let sensorServiceUUID = CBUUID(string: "180D")
     private let sensorDataCharacteristicUUID = CBUUID(string: "2A37")
     private let timeStampCharacteristicUUID = CBUUID(string: "2A38")
+    private let timeSyncServiceUUID = CBUUID(string: "180F")
+    private let currentTimeCharacteristicUUID = CBUUID(string: "2A39")
     
     // Published sensor data and timestamp
     @Published var sensorData: UInt32 = 0
@@ -33,7 +35,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     // Central Manager state update
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state == .poweredOn {
-            centralManager.scanForPeripherals(withServices: [sensorServiceUUID], options: nil)
+            centralManager.scanForPeripherals(withServices: [sensorServiceUUID, timeSyncServiceUUID], options: nil)
         } else {
             print("Central is not powered on")
         }
@@ -50,31 +52,31 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         print("Connected to Sensor Tracker")
         centralManager.stopScan()
-        sensorTrackerPeripheral?.discoverServices([sensorServiceUUID])
+        sensorTrackerPeripheral?.discoverServices([sensorServiceUUID, timeSyncServiceUUID])
     }
-    
+
     // Discover characteristics for target service
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let services = peripheral.services {
             for service in services {
-                if service.uuid == sensorServiceUUID {
-                    peripheral.discoverCharacteristics([sensorDataCharacteristicUUID, timeStampCharacteristicUUID], for: service)
+                if service.uuid == sensorServiceUUID || service.uuid == timeSyncServiceUUID {
+                    peripheral.discoverCharacteristics(nil, for: service)
                 }
             }
         }
     }
-    
+
     // Enable notifications for target characteristics
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
-                if characteristic.uuid == sensorDataCharacteristicUUID || characteristic.uuid == timeStampCharacteristicUUID {
+                if characteristic.uuid == sensorDataCharacteristicUUID || characteristic.uuid == timeStampCharacteristicUUID || characteristic.uuid == currentTimeCharacteristicUUID {
                     peripheral.setNotifyValue(true, for: characteristic)
                 }
             }
         }
     }
-    
+
     // Update published properties when new data is received
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if characteristic.uuid == sensorDataCharacteristicUUID {
@@ -90,8 +92,15 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             }
         }
         
+        if characteristic.uuid == currentTimeCharacteristicUUID {
+            if let currentTimeValue = characteristic.value {
+                let currentTime = currentTimeValue.withUnsafeBytes { $0.load(as: UInt32.self) }
+                let unixTime = Date(timeIntervalSince1970: TimeInterval(currentTime))
+                print("Arduino current time: \(unixTime)")
+            }
+        }
     }
-    
+
     func manualLog() {
         sensorData = 1
         timeStamp = UInt32(Date().timeIntervalSince1970)
