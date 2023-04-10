@@ -87,4 +87,10 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             }
         }
     }
+    
+    func manualLog() {
+        sensorData = 1
+        timeStamp = UInt32(Date().timeIntervalSince1970)
+        print("Manual log registered.")
+    }
 }

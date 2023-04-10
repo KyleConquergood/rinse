@@ -8,11 +8,9 @@
 import SwiftUI
 
 struct ContentView: View {
-    // Create an instance of BluetoothManager
-    @StateObject private var bluetoothManager = BluetoothManager()
+    @EnvironmentObject var bluetoothManager: BluetoothManager
 
     var body: some View {
-        // Display the sensor data and timestamp
         VStack(spacing: 20) {
             Text("Sensor Data")
                 .font(.title)
@@ -22,6 +20,16 @@ struct ContentView: View {
                 .font(.title)
             Text("\(bluetoothManager.timeStamp)")
                 .font(.largeTitle)
+            
+            Button(action: {
+                bluetoothManager.manualLog()
+            }) {
+                Text("Manual Log")
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(8)
+            }
         }
         .padding()
     }
@@ -30,5 +38,6 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .environmentObject(BluetoothManager())
     }
 }

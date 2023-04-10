@@ -8,11 +8,13 @@
 import SwiftUI
 
 @main
-struct rinseApp: App {
-    // Instantiate ContentView as the main view of the app
+struct RinseApp: App {
+    var bluetoothManager = BluetoothManager()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(bluetoothManager)
         }
     }
 }
