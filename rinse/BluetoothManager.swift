@@ -19,7 +19,8 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     private let timeStampCharacteristicUUID = CBUUID(string: "2A38")
     private let timeSyncServiceUUID = CBUUID(string: "180F")
     private let currentTimeCharacteristicUUID = CBUUID(string: "2A39")
-    
+    private let syncTimeCharacteristicUUID = CBUUID(string: "2A3A") // New characteristic for sync time
+
     // Published sensor data and timestamp
     @Published var sensorData: UInt32 = 0
     @Published var timeStamp: UInt32 = 0
@@ -66,12 +67,16 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         }
     }
 
-    // Enable notifications for target characteristics
+    // Enable notifications for target characteristics and write current time to syncTimeCharacteristic
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
                 if characteristic.uuid == sensorDataCharacteristicUUID || characteristic.uuid == timeStampCharacteristicUUID || characteristic.uuid == currentTimeCharacteristicUUID {
                     peripheral.setNotifyValue(true, for: characteristic)
+                }
+                if characteristic.uuid == syncTimeCharacteristicUUID {
+                    var currentTime = UInt32(Date().timeIntervalSince1970)
+                    peripheral.writeValue(Data(bytes: &currentTime, count: MemoryLayout<UInt32>.size), for: characteristic, type: .withResponse)
                 }
             }
         }
