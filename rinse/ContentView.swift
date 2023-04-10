@@ -30,6 +30,14 @@ struct ContentView: View {
                     .background(Color.blue)
                     .cornerRadius(8)
             }
+            
+            List(bluetoothManager.dataModel.logs) { log in
+                HStack {
+                    Text("\(log.source)")
+                    Spacer()
+                    Text("\(log.timestamp)")
+                }
+            }
         }
         .padding()
     }

@@ -12,6 +12,7 @@
 		2767ECF129E149FA0024A5D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2767ECF029E149FA0024A5D0 /* Assets.xcassets */; };
 		2767ECF429E149FA0024A5D0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2767ECF329E149FA0024A5D0 /* Preview Assets.xcassets */; };
 		2767ECFC29E1500B0024A5D0 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */; };
+		2767ECFE29E3D9500024A5D0 /* DataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2767ECFD29E3D9500024A5D0 /* DataModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 		2767ECF029E149FA0024A5D0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2767ECF329E149FA0024A5D0 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
+		2767ECFD29E3D9500024A5D0 /* DataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +57,7 @@
 			children = (
 				2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */,
 				2767ECEC29E149F60024A5D0 /* rinseApp.swift */,
+				2767ECFD29E3D9500024A5D0 /* DataModel.swift */,
 				2767ECEE29E149F60024A5D0 /* ContentView.swift */,
 				2767ECF029E149FA0024A5D0 /* Assets.xcassets */,
 				2767ECF229E149FA0024A5D0 /* Preview Content */,
@@ -141,6 +144,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2767ECEF29E149F60024A5D0 /* ContentView.swift in Sources */,
+				2767ECFE29E3D9500024A5D0 /* DataModel.swift in Sources */,
 				2767ECFC29E1500B0024A5D0 /* BluetoothManager.swift in Sources */,
 				2767ECED29E149F60024A5D0 /* rinseApp.swift in Sources */,
 			);

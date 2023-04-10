@@ -22,6 +22,8 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     @Published var sensorData: UInt32 = 0
     @Published var timeStamp: UInt32 = 0
     
+    @Published var dataModel = DataModel()
+    
     // Initialize the Central Manager
     override init() {
         super.init()
@@ -83,14 +85,20 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
 
         if characteristic.uuid == timeStampCharacteristicUUID {
             if let timeStampValue = characteristic.value {
-                timeStamp = UInt32(timeStampValue[0])
+                timeStamp = timeStampValue.withUnsafeBytes { $0.load(as: UInt32.self) }
+                dataModel.addLog(log: Log(timestamp: Int(timeStamp), source: "Arduino"))
             }
         }
+        
     }
     
     func manualLog() {
         sensorData = 1
         timeStamp = UInt32(Date().timeIntervalSince1970)
+        
+        // Add this line to store the log created manually
+        dataModel.addLog(log: Log(timestamp: Int(timeStamp), source: "Manual"))
+        
         print("Manual log registered.")
     }
 }
