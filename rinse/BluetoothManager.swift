@@ -194,7 +194,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             print("Peripheral not found")
             return
         }
-        guard let service = peripheral.services?.first(where: { $0.uuid == sensorServiceUUID }) else {
+        guard let service = peripheral.services?.first(where: { $0.uuid == timeSyncServiceUUID }) else {
             print("Service not found")
             return
         }
