@@ -12,7 +12,9 @@
 		2767ECF129E149FA0024A5D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2767ECF029E149FA0024A5D0 /* Assets.xcassets */; };
 		2767ECF429E149FA0024A5D0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2767ECF329E149FA0024A5D0 /* Preview Assets.xcassets */; };
 		2767ECFC29E1500B0024A5D0 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */; };
-		2767ECFE29E3D9500024A5D0 /* DataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2767ECFD29E3D9500024A5D0 /* DataModel.swift */; };
+		2767ED0129E4C5930024A5D0 /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2767ECFF29E4C5930024A5D0 /* DataModel.xcdatamodeld */; };
+		2767ED0529E4CDF90024A5D0 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2767ED0429E4CDF90024A5D0 /* PersistenceController.swift */; };
+		2767ED0829E503B70024A5D0 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2767ED0729E503B70024A5D0 /* CoreData.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,7 +24,9 @@
 		2767ECF029E149FA0024A5D0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2767ECF329E149FA0024A5D0 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
-		2767ECFD29E3D9500024A5D0 /* DataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
+		2767ED0029E4C5930024A5D0 /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
+		2767ED0429E4CDF90024A5D0 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		2767ED0729E503B70024A5D0 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -30,6 +34,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2767ED0829E503B70024A5D0 /* CoreData.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,6 +46,7 @@
 			children = (
 				2767ECEB29E149F60024A5D0 /* rinse */,
 				2767ECEA29E149F60024A5D0 /* Products */,
+				2767ED0629E503B60024A5D0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -55,9 +61,10 @@
 		2767ECEB29E149F60024A5D0 /* rinse */ = {
 			isa = PBXGroup;
 			children = (
+				2767ECFF29E4C5930024A5D0 /* DataModel.xcdatamodeld */,
 				2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */,
 				2767ECEC29E149F60024A5D0 /* rinseApp.swift */,
-				2767ECFD29E3D9500024A5D0 /* DataModel.swift */,
+				2767ED0429E4CDF90024A5D0 /* PersistenceController.swift */,
 				2767ECEE29E149F60024A5D0 /* ContentView.swift */,
 				2767ECF029E149FA0024A5D0 /* Assets.xcassets */,
 				2767ECF229E149FA0024A5D0 /* Preview Content */,
@@ -71,6 +78,14 @@
 				2767ECF329E149FA0024A5D0 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		2767ED0629E503B60024A5D0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2767ED0729E503B70024A5D0 /* CoreData.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -144,8 +159,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				2767ECEF29E149F60024A5D0 /* ContentView.swift in Sources */,
-				2767ECFE29E3D9500024A5D0 /* DataModel.swift in Sources */,
+				2767ED0129E4C5930024A5D0 /* DataModel.xcdatamodeld in Sources */,
 				2767ECFC29E1500B0024A5D0 /* BluetoothManager.swift in Sources */,
+				2767ED0529E4CDF90024A5D0 /* PersistenceController.swift in Sources */,
 				2767ECED29E149F60024A5D0 /* rinseApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -351,6 +367,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		2767ECFF29E4C5930024A5D0 /* DataModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				2767ED0029E4C5930024A5D0 /* DataModel.xcdatamodel */,
+			);
+			currentVersion = 2767ED0029E4C5930024A5D0 /* DataModel.xcdatamodel */;
+			path = DataModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 2767ECE129E149F60024A5D0 /* Project object */;
 }

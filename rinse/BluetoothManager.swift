@@ -7,11 +7,18 @@
 
 import Foundation
 import CoreBluetooth
+import CoreData
+
+struct Log {
+    var timestamp: Int
+    var source: String
+}
 
 class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     // Central Manager and Peripheral
     private var centralManager: CBCentralManager!
     private var sensorTrackerPeripheral: CBPeripheral?
+    public var managedObjectContext: NSManagedObjectContext
     
     // UUIDs for Service and Characteristics
     private let sensorServiceUUID = CBUUID(string: "180D")
@@ -25,10 +32,11 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     @Published var sensorData: UInt32 = 0
     @Published var timeStamp: UInt32 = 0
     
-    @Published var dataModel = DataModel()
+    @Published var logs: [LogEntity] = []
     
-    // Initialize the Central Manager
-    override init() {
+    // Add managedObjectContext as a parameter in the initializer
+    init(managedObjectContext: NSManagedObjectContext) {
+        self.managedObjectContext = managedObjectContext
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
     }
@@ -93,7 +101,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         if characteristic.uuid == timeStampCharacteristicUUID {
             if let timeStampValue = characteristic.value {
                 timeStamp = timeStampValue.withUnsafeBytes { $0.load(as: UInt32.self) }
-                dataModel.addLog(log: Log(timestamp: Int(timeStamp), source: "Arduino"))
+                addLog(log: Log(timestamp: Int(timeStamp), source: "Arduino")) // Update this line
             }
         }
         
@@ -105,14 +113,61 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             }
         }
     }
+    
+    func addLog(log: Log) {
+        PersistenceController.shared.container.performBackgroundTask { backgroundContext in
+            let logEntity = LogEntity(context: backgroundContext)
+            logEntity.timestamp = Int64(log.timestamp)
+            logEntity.source = log.source
+
+            do {
+                try backgroundContext.save()
+                print("Log saved: \(logEntity)")
+
+                DispatchQueue.main.async {
+                    let request: NSFetchRequest<LogEntity> = LogEntity.fetchRequest()
+                    do {
+                        let logs = try self.managedObjectContext.fetch(request)
+                        for log in logs {
+                            print("Log fetched from context: source=\(log.source ?? "nil"), timestamp=\(log.timestamp)")
+                        }
+                    } catch {
+                        print("Error fetching logs:", error.localizedDescription)
+                    }
+                }
+            } catch {
+                print("Error saving log:", error.localizedDescription)
+            }
+            print("Auto log registered.")
+        }
+    }
+    
 
     func manualLog() {
-        sensorData = 1
-        timeStamp = UInt32(Date().timeIntervalSince1970)
-        
-        // Add this line to store the log created manually
-        dataModel.addLog(log: Log(timestamp: Int(timeStamp), source: "Manual"))
-        
-        print("Manual log registered.")
+        PersistenceController.shared.container.performBackgroundTask { backgroundContext in
+            let log = LogEntity(context: backgroundContext)
+            log.source = "Manual"
+            log.timestamp = Int64(Date().timeIntervalSince1970)
+
+            do {
+                try backgroundContext.save()
+                print("Log saved:", log)
+
+                DispatchQueue.main.async {
+                    let request: NSFetchRequest<LogEntity> = LogEntity.fetchRequest()
+                    do {
+                        self.logs = try self.managedObjectContext.fetch(request)
+                        for log in self.logs {
+                            print("Log fetched from context: source=\(log.source ?? "nil"), timestamp=\(log.timestamp)")
+                        }
+                    } catch {
+                        print("Error fetching logs:", error.localizedDescription)
+                    }
+                }
+            } catch {
+                print("Error saving log:", error.localizedDescription)
+            }
+            print("Manual log registered.")
+        }
     }
 }

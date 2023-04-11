@@ -6,15 +6,23 @@
 //
 
 import SwiftUI
+import CoreData
 
 @main
 struct RinseApp: App {
-    var bluetoothManager = BluetoothManager()
+    let persistenceController = PersistenceController.shared
+    var bluetoothManager: BluetoothManager
+
+    init() {
+        let managedObjectContext = persistenceController.container.viewContext
+        bluetoothManager = BluetoothManager(managedObjectContext: managedObjectContext)
+    }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(bluetoothManager)
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
 }
