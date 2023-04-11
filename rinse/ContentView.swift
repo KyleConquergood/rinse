@@ -10,9 +10,12 @@ import CoreData
 
 struct ContentView: View {
     @EnvironmentObject var bluetoothManager: BluetoothManager
+    private var managedObjectContext: NSManagedObjectContext {
+        bluetoothManager.managedObjectContext
+    }
     
-    @State private var refreshFlag = false
-
+    @State private var logs: [LogEntity] = []
+    
     var body: some View {
         VStack(spacing: 20) {
             Text("Sensor Data")
@@ -26,6 +29,7 @@ struct ContentView: View {
             
             Button(action: {
                 bluetoothManager.manualLog()
+                logs = bluetoothManager.fetchLogs()
             }) {
                 Text("Manual Log")
                     .foregroundColor(.white)
@@ -36,7 +40,7 @@ struct ContentView: View {
             
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 10) {
-                    ForEach(bluetoothManager.logs, id: \.self) { log in
+                    ForEach(logs, id: \.self) { log in
                         HStack {
                             Text("\(log.source ?? "")")
                             Spacer()
@@ -48,19 +52,20 @@ struct ContentView: View {
                     }
                 }
             }
-            .id(bluetoothManager.logs.count) // Update this line
-            .onChange(of: bluetoothManager.logs.count) { _ in
-                refreshFlag.toggle()
-            }
         }
         .padding()
+        .onAppear {
+            logs = bluetoothManager.fetchLogs()
+        }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         let persistenceController = PersistenceController.shared
-        ContentView()
-            .environmentObject(BluetoothManager(managedObjectContext: persistenceController.container.viewContext))
+        let bluetoothManager = BluetoothManager(managedObjectContext: persistenceController.container.viewContext)
+        return ContentView()
+            .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            .environmentObject(bluetoothManager)
     }
 }

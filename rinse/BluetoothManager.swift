@@ -33,6 +33,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     @Published var timeStamp: UInt32 = 0
     
     @Published var logs: [LogEntity] = []
+    @Published var logsChanged = false
     
     // Add managedObjectContext as a parameter in the initializer
     init(managedObjectContext: NSManagedObjectContext) {
@@ -125,10 +126,11 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                 print("Log saved: \(logEntity)")
 
                 DispatchQueue.main.async {
+                    self.logsChanged.toggle()
                     let request: NSFetchRequest<LogEntity> = LogEntity.fetchRequest()
                     do {
-                        let logs = try self.managedObjectContext.fetch(request)
-                        for log in logs {
+                        self.logs = try self.managedObjectContext.fetch(request)
+                        for log in self.logs {
                             print("Log fetched from context: source=\(log.source ?? "nil"), timestamp=\(log.timestamp)")
                         }
                     } catch {
@@ -154,6 +156,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                 print("Log saved:", log)
 
                 DispatchQueue.main.async {
+                    self.logsChanged.toggle()
                     let request: NSFetchRequest<LogEntity> = LogEntity.fetchRequest()
                     do {
                         self.logs = try self.managedObjectContext.fetch(request)
@@ -169,5 +172,18 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             }
             print("Manual log registered.")
         }
+    }
+    
+    func fetchLogs() -> [LogEntity] {
+        let request: NSFetchRequest<LogEntity> = LogEntity.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \LogEntity.timestamp, ascending: false)]
+
+        do {
+            let logs = try managedObjectContext.fetch(request)
+            return logs
+        } catch {
+            print("Error fetching logs:", error.localizedDescription)
+        }
+        return []
     }
 }
