@@ -14,6 +14,11 @@ struct ContentView: View {
         bluetoothManager.managedObjectContext
     }
     
+    func updateLogs() {
+        logs = bluetoothManager.fetchLogs()
+        print("Logs updated")
+    }
+    
     @State private var logs: [LogEntity] = []
     
     var body: some View {
@@ -28,13 +33,23 @@ struct ContentView: View {
                 .font(.largeTitle)
             
             Button(action: {
-                bluetoothManager.manualLog()
-                logs = bluetoothManager.fetchLogs()
+                bluetoothManager.manualLog(completion: updateLogs)
             }) {
                 Text("Manual Log")
                     .foregroundColor(.white)
                     .padding()
                     .background(Color.blue)
+                    .cornerRadius(8)
+            }
+            
+            Button(action: {
+                bluetoothManager.deleteAllLogs()
+                updateLogs()
+            }) {
+                Text("Delete All Logs")
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.red)
                     .cornerRadius(8)
             }
             
@@ -56,6 +71,9 @@ struct ContentView: View {
         .padding()
         .onAppear {
             logs = bluetoothManager.fetchLogs()
+        }
+        .onChange(of: bluetoothManager.logsChanged) { _ in
+            updateLogs()
         }
     }
 }

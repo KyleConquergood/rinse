@@ -102,7 +102,9 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         if characteristic.uuid == timeStampCharacteristicUUID {
             if let timeStampValue = characteristic.value {
                 timeStamp = timeStampValue.withUnsafeBytes { $0.load(as: UInt32.self) }
-                addLog(log: Log(timestamp: Int(timeStamp), source: "Arduino")) // Update this line
+                addLog(log: Log(timestamp: Int(timeStamp), source: "Arduino"), completion: { [weak self] in
+                    self?.logsChanged.toggle()
+                })
             }
         }
         
@@ -115,7 +117,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         }
     }
     
-    func addLog(log: Log) {
+    func addLog(log: Log, completion: @escaping () -> Void) {
         PersistenceController.shared.container.performBackgroundTask { backgroundContext in
             let logEntity = LogEntity(context: backgroundContext)
             logEntity.timestamp = Int64(log.timestamp)
@@ -126,16 +128,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                 print("Log saved: \(logEntity)")
 
                 DispatchQueue.main.async {
-                    self.logsChanged.toggle()
-                    let request: NSFetchRequest<LogEntity> = LogEntity.fetchRequest()
-                    do {
-                        self.logs = try self.managedObjectContext.fetch(request)
-                        for log in self.logs {
-                            print("Log fetched from context: source=\(log.source ?? "nil"), timestamp=\(log.timestamp)")
-                        }
-                    } catch {
-                        print("Error fetching logs:", error.localizedDescription)
-                    }
+                    completion() // Add this line
                 }
             } catch {
                 print("Error saving log:", error.localizedDescription)
@@ -145,7 +138,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     }
     
 
-    func manualLog() {
+    func manualLog(completion: (() -> Void)? = nil) {
         PersistenceController.shared.container.performBackgroundTask { backgroundContext in
             let log = LogEntity(context: backgroundContext)
             log.source = "Manual"
@@ -156,16 +149,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                 print("Log saved:", log)
 
                 DispatchQueue.main.async {
-                    self.logsChanged.toggle()
-                    let request: NSFetchRequest<LogEntity> = LogEntity.fetchRequest()
-                    do {
-                        self.logs = try self.managedObjectContext.fetch(request)
-                        for log in self.logs {
-                            print("Log fetched from context: source=\(log.source ?? "nil"), timestamp=\(log.timestamp)")
-                        }
-                    } catch {
-                        print("Error fetching logs:", error.localizedDescription)
-                    }
+                    completion?()
                 }
             } catch {
                 print("Error saving log:", error.localizedDescription)
@@ -185,5 +169,22 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
             print("Error fetching logs:", error.localizedDescription)
         }
         return []
+    }
+    
+    func deleteAllLogs() {
+        PersistenceController.shared.container.performBackgroundTask { backgroundContext in
+            let fetchRequest: NSFetchRequest<NSFetchRequestResult> = LogEntity.fetchRequest()
+
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+
+            do {
+                try backgroundContext.execute(deleteRequest)
+                DispatchQueue.main.async {
+                    self.logsChanged.toggle()
+                }
+            } catch {
+                print("Error deleting logs:", error.localizedDescription)
+            }
+        }
     }
 }
