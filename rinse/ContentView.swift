@@ -53,6 +53,16 @@ struct ContentView: View {
                     .cornerRadius(8)
             }
             
+            Button(action: {
+                bluetoothManager.sendReminderSignal()
+            }) {
+                Text("Send Reminder")
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.green)
+                    .cornerRadius(8)
+            }
+            
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 10) {
                     ForEach(logs, id: \.self) { log in

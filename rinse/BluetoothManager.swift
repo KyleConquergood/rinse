@@ -27,6 +27,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     private let timeSyncServiceUUID = CBUUID(string: "180F")
     private let currentTimeCharacteristicUUID = CBUUID(string: "2A39")
     private let syncTimeCharacteristicUUID = CBUUID(string: "2A3A") // New characteristic for sync time
+    private let reminderCharacteristicUUID = CBUUID(string: "2A3B") // custom UUID for the reminder characteristic
 
     // Published sensor data and timestamp
     @Published var sensorData: UInt32 = 0
@@ -80,7 +81,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
-                if characteristic.uuid == sensorDataCharacteristicUUID || characteristic.uuid == timeStampCharacteristicUUID || characteristic.uuid == currentTimeCharacteristicUUID {
+                if characteristic.uuid == sensorDataCharacteristicUUID || characteristic.uuid == timeStampCharacteristicUUID || characteristic.uuid == currentTimeCharacteristicUUID || characteristic.uuid == reminderCharacteristicUUID {
                     peripheral.setNotifyValue(true, for: characteristic)
                 }
                 if characteristic.uuid == syncTimeCharacteristicUUID {
@@ -186,5 +187,25 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
                 print("Error deleting logs:", error.localizedDescription)
             }
         }
+    }
+    
+    func sendReminderSignal() {
+        guard let peripheral = sensorTrackerPeripheral else {
+            print("Peripheral not found")
+            return
+        }
+        guard let service = peripheral.services?.first(where: { $0.uuid == sensorServiceUUID }) else {
+            print("Service not found")
+            return
+        }
+        guard let characteristic = service.characteristics?.first(where: { $0.uuid == reminderCharacteristicUUID }) else {
+            print("Characteristic not found")
+            return
+        }
+
+        var reminderSignal: UInt8 = 1
+        let reminderData = Data(bytes: &reminderSignal, count: MemoryLayout<UInt8>.size)
+        peripheral.writeValue(reminderData, for: characteristic, type: .withResponse)
+        print("Reminder signal sent")
     }
 }
