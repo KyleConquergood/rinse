@@ -36,6 +36,8 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     @Published var logs: [LogEntity] = []
     @Published var logsChanged = false
     
+    @Published var isConnected: Bool = false
+    
     // Add managedObjectContext as a parameter in the initializer
     init(managedObjectContext: NSManagedObjectContext) {
         self.managedObjectContext = managedObjectContext
@@ -62,10 +64,20 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     // Connect to peripheral and discover services
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         print("Connected to Sensor Tracker")
+        isConnected = true
         centralManager.stopScan()
         sensorTrackerPeripheral?.discoverServices([sensorServiceUUID, timeSyncServiceUUID])
     }
-
+    
+    // Handle disconention from target service
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        print("Disconnected from Sensor Tracker")
+        isConnected = false
+        if central.state == .poweredOn {
+            centralManager.scanForPeripherals(withServices: [sensorServiceUUID, timeSyncServiceUUID], options: nil)
+        }
+    }
+    
     // Discover characteristics for target service
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let services = peripheral.services {

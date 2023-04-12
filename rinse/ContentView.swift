@@ -79,6 +79,16 @@ struct ContentView: View {
             }
         }
         .padding()
+        .overlay(
+            Group {
+                if bluetoothManager.isConnected {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 10, height: 10)
+                }
+            },
+            alignment: .topLeading
+        )
         .onAppear {
             logs = bluetoothManager.fetchLogs()
         }
