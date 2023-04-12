@@ -7,9 +7,12 @@
 
 import SwiftUI
 import CoreData
+import UserNotifications
 
 @main
 struct RinseApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+    
     let persistenceController = PersistenceController.shared
     var bluetoothManager: BluetoothManager
 
@@ -23,6 +26,14 @@ struct RinseApp: App {
             ContentView()
                 .environmentObject(bluetoothManager)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .onChange(of: scenePhase) { phase in
+                    switch phase {
+                    case .background, .inactive:
+                        persistenceController.saveContext()
+                    default:
+                        break
+                    }
+                }
         }
     }
 }

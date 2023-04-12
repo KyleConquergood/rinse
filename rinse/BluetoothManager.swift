@@ -8,6 +8,7 @@
 import Foundation
 import CoreBluetooth
 import CoreData
+import UserNotifications
 
 struct Log {
     var timestamp: Int
@@ -43,6 +44,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         self.managedObjectContext = managedObjectContext
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
+        requestNotificationPermission()
     }
     
     // Central Manager state update
@@ -220,4 +222,85 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         peripheral.writeValue(reminderData, for: characteristic, type: .withResponse)
         print("Reminder signal sent")
     }
+    
+    func addMedicationSchedule(name: String, time: Date, repeatsDaily: Bool, completion: (() -> Void)? = nil) {
+        PersistenceController.shared.container.performBackgroundTask { backgroundContext in
+            let medicationSchedule = MedicationSchedule(context: backgroundContext)
+            medicationSchedule.name = name
+            medicationSchedule.time = time
+            medicationSchedule.repeatsDaily = repeatsDaily
+
+            do {
+                try backgroundContext.save()
+                print("Medication schedule saved: Name: \(medicationSchedule.name ?? ""), Time: \(medicationSchedule.time)") // Print the name and time of the notification
+
+                DispatchQueue.main.async {
+                    completion?()
+                    self.scheduleNotification(for: medicationSchedule) // Schedule the notification
+                }
+            } catch {
+                print("Error saving medication schedule:", error.localizedDescription)
+            }
+        }
+    }
+    
+    func fetchMedicationSchedules() -> [MedicationSchedule] {
+        let request: NSFetchRequest<MedicationSchedule> = MedicationSchedule.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \MedicationSchedule.time, ascending: true)]
+
+        do {
+            let schedules = try managedObjectContext.fetch(request)
+            return schedules
+        } catch {
+            print("Error fetching medication schedules:", error.localizedDescription)
+        }
+        return []
+    }
+    
+    func deleteAllMedicationSchedules() {
+        PersistenceController.shared.container.performBackgroundTask { backgroundContext in
+            let fetchRequest: NSFetchRequest<NSFetchRequestResult> = MedicationSchedule.fetchRequest()
+
+            let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+
+            do {
+                try backgroundContext.execute(batchDeleteRequest)
+                print("All medication schedules deleted")
+            } catch {
+                print("Error deleting all medication schedules:", error.localizedDescription)
+            }
+        }
+    }
+    
+    func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                print("Notification permission granted")
+            } else {
+                print("Notification permission denied")
+            }
+        }
+    }
+    
+    func scheduleNotification(for medicationSchedule: MedicationSchedule) {
+        let content = UNMutableNotificationContent()
+        content.title = "Medication Reminder"
+        content.body = "It's time to take \(medicationSchedule.name ?? "your medication")"
+        content.sound = UNNotificationSound.default
+        
+        let components = Calendar.current.dateComponents([.hour, .minute], from: medicationSchedule.time)
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: medicationSchedule.repeatsDaily)
+        
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error scheduling notification: \(error.localizedDescription)")
+            } else {
+                print("Notification scheduled for \(medicationSchedule.name ?? "medication") at \(medicationSchedule.time)")
+            }
+        }
+    }
+    
 }
