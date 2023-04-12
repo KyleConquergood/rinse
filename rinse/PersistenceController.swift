@@ -13,9 +13,15 @@ struct PersistenceController {
 
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "DataModel")
-        
+
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+        } else {
+            let url = container.persistentStoreDescriptions.first!.url!
+            let description = NSPersistentStoreDescription(url: url)
+            description.shouldMigrateStoreAutomatically = true
+            description.shouldInferMappingModelAutomatically = true
+            container.persistentStoreDescriptions = [description]
         }
 
         container.loadPersistentStores { (_, error) in
@@ -24,11 +30,9 @@ struct PersistenceController {
             }
         }
         
-        // Add this line to merge the changes from the background context
         container.viewContext.automaticallyMergesChangesFromParent = true
     }
 
-    // Add this function to save the context
     func saveContext() {
         let context = container.viewContext
         if context.hasChanges {

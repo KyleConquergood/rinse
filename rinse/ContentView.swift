@@ -98,9 +98,18 @@ struct ContentView: View {
             .onAppear {
                 fetchMedicationSchedules()
             }
-            .tabItem {
+            .tabItem {  
                 Image(systemName: "pills")
                 Text("Medication Schedule")
+            }
+            
+            VStack {
+                ProgressRingView(weeklyProgress: 0.75, monthlyProgress: 0.4) // Set your progress value here (between 0 and 1)
+                    .frame(width: 200, height: 200)
+            }
+            .tabItem {
+                Image(systemName: "chart.pie")
+                Text("Data Visualization")
             }
             
             VStack(spacing: 20) {

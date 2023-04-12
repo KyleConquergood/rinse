@@ -17,6 +17,8 @@
 		2767ED0829E503B70024A5D0 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2767ED0729E503B70024A5D0 /* CoreData.framework */; };
 		27B17FC929E69DCB00355A20 /* MedicationSchedule+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B17FC729E69DCB00355A20 /* MedicationSchedule+CoreDataClass.swift */; };
 		27B17FCA29E69DCB00355A20 /* MedicationSchedule+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B17FC829E69DCB00355A20 /* MedicationSchedule+CoreDataProperties.swift */; };
+		27E3F5A829E6F3E800C41FAA /* ProgressRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27E3F5A729E6F3E800C41FAA /* ProgressRingView.swift */; };
+		27E3F5AB29E6FF2200C41FAA /* Model.xcmappingmodel in Sources */ = {isa = PBXBuildFile; fileRef = 27E3F5AA29E6FF2200C41FAA /* Model.xcmappingmodel */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +33,9 @@
 		2767ED0729E503B70024A5D0 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		27B17FC729E69DCB00355A20 /* MedicationSchedule+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MedicationSchedule+CoreDataClass.swift"; sourceTree = "<group>"; };
 		27B17FC829E69DCB00355A20 /* MedicationSchedule+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MedicationSchedule+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		27E3F5A729E6F3E800C41FAA /* ProgressRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRingView.swift; sourceTree = "<group>"; };
+		27E3F5A929E6FE3A00C41FAA /* DataModel2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel2.xcdatamodel; sourceTree = "<group>"; };
+		27E3F5AA29E6FF2200C41FAA /* Model.xcmappingmodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcmappingmodel; path = Model.xcmappingmodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +55,8 @@
 			children = (
 				27B17FC729E69DCB00355A20 /* MedicationSchedule+CoreDataClass.swift */,
 				27B17FC829E69DCB00355A20 /* MedicationSchedule+CoreDataProperties.swift */,
+				2767ECFF29E4C5930024A5D0 /* DataModel.xcdatamodeld */,
+				27E3F5AA29E6FF2200C41FAA /* Model.xcmappingmodel */,
 				2767ECEB29E149F60024A5D0 /* rinse */,
 				2767ECEA29E149F60024A5D0 /* Products */,
 				2767ED0629E503B60024A5D0 /* Frameworks */,
@@ -67,10 +74,10 @@
 		2767ECEB29E149F60024A5D0 /* rinse */ = {
 			isa = PBXGroup;
 			children = (
-				2767ECFF29E4C5930024A5D0 /* DataModel.xcdatamodeld */,
 				2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */,
 				2767ECEC29E149F60024A5D0 /* rinseApp.swift */,
 				2767ED0429E4CDF90024A5D0 /* PersistenceController.swift */,
+				27E3F5A729E6F3E800C41FAA /* ProgressRingView.swift */,
 				2767ECEE29E149F60024A5D0 /* ContentView.swift */,
 				2767ECF029E149FA0024A5D0 /* Assets.xcassets */,
 				2767ECF229E149FA0024A5D0 /* Preview Content */,
@@ -165,12 +172,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				27B17FC929E69DCB00355A20 /* MedicationSchedule+CoreDataClass.swift in Sources */,
+				27E3F5A829E6F3E800C41FAA /* ProgressRingView.swift in Sources */,
 				2767ECEF29E149F60024A5D0 /* ContentView.swift in Sources */,
 				2767ED0129E4C5930024A5D0 /* DataModel.xcdatamodeld in Sources */,
 				27B17FCA29E69DCB00355A20 /* MedicationSchedule+CoreDataProperties.swift in Sources */,
 				2767ECFC29E1500B0024A5D0 /* BluetoothManager.swift in Sources */,
 				2767ED0529E4CDF90024A5D0 /* PersistenceController.swift in Sources */,
 				2767ECED29E149F60024A5D0 /* rinseApp.swift in Sources */,
+				27E3F5AB29E6FF2200C41FAA /* Model.xcmappingmodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,9 +391,10 @@
 		2767ECFF29E4C5930024A5D0 /* DataModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				27E3F5A929E6FE3A00C41FAA /* DataModel2.xcdatamodel */,
 				2767ED0029E4C5930024A5D0 /* DataModel.xcdatamodel */,
 			);
-			currentVersion = 2767ED0029E4C5930024A5D0 /* DataModel.xcdatamodel */;
+			currentVersion = 27E3F5A929E6FE3A00C41FAA /* DataModel2.xcdatamodel */;
 			path = DataModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
