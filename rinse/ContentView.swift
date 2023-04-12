@@ -17,14 +17,18 @@ struct ContentView: View {
     func updateLogs() {
         logs = bluetoothManager.fetchLogs()
         print("Logs updated")
+        updateProgressValues()
     }
     
     func fetchMedicationSchedules() {
         medicationSchedules = bluetoothManager.fetchMedicationSchedules()
+        updateProgressValues()
     }
     
     @State private var logs: [LogEntity] = []
     @State private var medicationSchedules: [MedicationSchedule] = []
+    @State private var weeklyProgress: Double = 0.0
+    @State private var monthlyProgress: Double = 0.0
 
     
     // Add the following state properties for medication schedule input
@@ -44,6 +48,54 @@ struct ContentView: View {
         repeatsDaily = false
     }
     
+    func medicationAdherencePercentage(logs: [LogEntity], medicationSchedules: [MedicationSchedule], startDate: Date, endDate: Date) -> Double {
+        let calendar = Calendar.current
+        var currentDate = startDate
+        var adherenceDays = 0
+        var totalDays = 0
+        
+        while currentDate <= endDate {
+            totalDays += 1
+            let dayLogs = logs.filter { log in
+                let logDate = Date(timeIntervalSince1970: TimeInterval(log.timestamp))
+                return calendar.isDate(logDate, inSameDayAs: currentDate)
+            }
+            
+            var dayAdherence = true
+            for schedule in medicationSchedules {
+                let scheduleTime = calendar.dateComponents([.hour, .minute], from: schedule.time)
+                let adherenceWindowStart = calendar.date(bySettingHour: scheduleTime.hour!, minute: scheduleTime.minute!, second: 0, of: currentDate)!
+                let adherenceWindowEnd = calendar.date(bySettingHour: scheduleTime.hour!, minute: scheduleTime.minute! + 30, second: 59, of: currentDate)!
+                
+                let correctLog = dayLogs.first { log in
+                    let logDate = Date(timeIntervalSince1970: TimeInterval(log.timestamp))
+                    return logDate >= adherenceWindowStart && logDate <= adherenceWindowEnd
+                }
+                
+                if correctLog == nil {
+                    dayAdherence = false
+                    break
+                }
+            }
+            
+            if dayAdherence {
+                adherenceDays += 1
+            }
+            
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
+        }
+        
+        return (Double(adherenceDays) / Double(totalDays)) * 100
+    }
+    
+    func updateProgressValues() {
+        let now = Date()
+        let weeklyStartDate = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
+        let monthlyStartDate = Calendar.current.date(byAdding: .month, value: -1, to: now) ?? now
+        
+        weeklyProgress = medicationAdherencePercentage(logs: logs, medicationSchedules: medicationSchedules, startDate: weeklyStartDate, endDate: now)
+        monthlyProgress = medicationAdherencePercentage(logs: logs, medicationSchedules: medicationSchedules, startDate: monthlyStartDate, endDate: now)
+    }
     
     var body: some View {
         // Add the following VStack for medication schedule input
@@ -104,7 +156,9 @@ struct ContentView: View {
             }
             
             VStack {
-                ProgressRingView(weeklyProgress: 0.75, monthlyProgress: 0.4) // Set your progress value here (between 0 and 1)
+//                ProgressRingView(weeklyProgress: weeklyProgress, monthlyProgress: monthlyProgress)
+//                    .frame(width: 200, height: 200)
+                ProgressRingView(weeklyProgress: 0.75, monthlyProgress: 0.4)
                     .frame(width: 200, height: 200)
             }
             .tabItem {
