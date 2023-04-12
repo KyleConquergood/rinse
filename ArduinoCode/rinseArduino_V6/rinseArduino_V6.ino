@@ -220,7 +220,6 @@ void setup() {
   pinMode(BUTTON_PIN5, INPUT_PULLUP);
 
   Serial.begin(9600);
-  while (!Serial);
 
   // Initialize BLE module
   if (!BLE.begin()) {
@@ -303,10 +302,10 @@ void loop() {
     timeSynced = false;
     Serial.print("Disconnected from central: ");
     Serial.println(central.address());
-  }
+  } 
 
   // Generate and store data only if the time has been synced and not connected to the central
   if (prevTimeSync && !central.connected()) {
-        checkSensorAndSendData();
+    checkSensorAndSendData();
   }    
 }
