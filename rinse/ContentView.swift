@@ -29,6 +29,7 @@ struct ContentView: View {
     @State private var medicationSchedules: [MedicationSchedule] = []
     @State private var weeklyProgress: Double = 0.0
     @State private var monthlyProgress: Double = 0.0
+    @State private var selectedMonthRange: Int = 1
 
     
     // Add the following state properties for medication schedule input
@@ -97,144 +98,231 @@ struct ContentView: View {
         monthlyProgress = medicationAdherencePercentage(logs: logs, medicationSchedules: medicationSchedules, startDate: monthlyStartDate, endDate: now)
     }
     
+    private var weeklyComplianceData: [CGFloat] {
+        let startDate = Calendar.current.date(byAdding: .month, value: -selectedMonthRange, to: Date()) ?? Date()
+        let endDate = Date()
+        let weeklyData = weeklyComplianceData(logs: logs, medicationSchedules: medicationSchedules, startDate: startDate, endDate: endDate)
+        return weeklyData
+    }
+    
+    func weeklyComplianceData(logs: [LogEntity], medicationSchedules: [MedicationSchedule], startDate: Date, endDate: Date) -> [CGFloat] {
+        let calendar = Calendar.current
+        var weeklyComplianceData: [CGFloat] = []
+
+        let weeksBetweenDates = calendar.dateComponents([.weekOfYear], from: startDate, to: endDate).weekOfYear ?? 0
+        var currentDate = startDate
+
+        for _ in 0...weeksBetweenDates {
+            var adherenceDays = 0
+            var totalDays = 0
+            let nextWeekDate = calendar.date(byAdding: .weekOfYear, value: 1, to: currentDate) ?? currentDate
+
+            while currentDate < nextWeekDate && currentDate <= endDate {
+                totalDays += 1
+                let dayLogs = logs.filter { log in
+                    let logDate = Date(timeIntervalSince1970: TimeInterval(log.timestamp))
+                    return calendar.isDate(logDate, inSameDayAs: currentDate)
+                }
+
+                var dayAdherence = true
+                for schedule in medicationSchedules {
+                    let scheduleTime = calendar.dateComponents([.hour, .minute], from: schedule.time)
+                    let adherenceWindowStart = calendar.date(bySettingHour: scheduleTime.hour!, minute: scheduleTime.minute!, second: 0, of: currentDate)!
+                    let adherenceWindowEnd = calendar.date(bySettingHour: scheduleTime.hour!, minute: scheduleTime.minute! + 30, second: 59, of: currentDate)!
+                    
+                    let correctLog = dayLogs.first { log in
+                        let logDate = Date(timeIntervalSince1970: TimeInterval(log.timestamp))
+                        return logDate >= adherenceWindowStart && logDate <= adherenceWindowEnd
+                    }
+                    
+                    if correctLog == nil {
+                        dayAdherence = false
+                        break
+                    }
+                }
+                
+                if dayAdherence {
+                    adherenceDays += 1
+                }
+                
+                currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
+            }
+
+            let weeklyCompliance = CGFloat(adherenceDays) / CGFloat(totalDays)
+            weeklyComplianceData.append(weeklyCompliance)
+        }
+        
+        return weeklyComplianceData
+    }
+    
     var body: some View {
         // Add the following VStack for medication schedule input
         TabView{
-            VStack(spacing: 10) {
-                TextField("Medication Name", text: $medicationName)
-                    .padding()
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
-                DatePicker("Medication Time", selection: $medicationTime, displayedComponents: [.hourAndMinute])
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(8)
-                    .padding()
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
-                Toggle(isOn: $repeatsDaily) {
-                    Text("Repeat daily")
-                }
-                .padding()
-                Button(action: saveMedicationSchedule) {
-                    Text("Save Medication Schedule")
-                        .foregroundColor(.white)
+            NavigationView {
+                VStack(spacing: 10) {
+                    TextField("Medication Name", text: $medicationName)
                         .padding()
-                        .background(Color.blue)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
+                    DatePicker("Medication Time", selection: $medicationTime, displayedComponents: [.hourAndMinute])
+                        .padding()
+                        .background(Color.white)
                         .cornerRadius(8)
-                }
-                Button(action: {
-                    bluetoothManager.deleteAllMedicationSchedules() {
-                        fetchMedicationSchedules()
+                        .padding()
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
+                    Toggle(isOn: $repeatsDaily) {
+                        Text("Repeat daily")
                     }
-                }) {
-                    Text("Delete All Medication Schedules")
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.red)
-                        .cornerRadius(8)
-                }
-
-                List {
-                    ForEach(medicationSchedules, id: \.self) { schedule in
-                        VStack(alignment: .leading) {
-                            Text(schedule.name ?? "Unknown")
-                                .font(.headline)
-                            Text("Time: \(schedule.time, style: .time)")
-                            if schedule.repeatsDaily {
-                                Text("Repeats daily")
-                            }
+                    .padding()
+                    Button(action: saveMedicationSchedule) {
+                        Text("Save Medication Schedule")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(8)
+                    }
+                    Button(action: {
+                        bluetoothManager.deleteAllMedicationSchedules() {
+                            fetchMedicationSchedules()
                         }
-                        .padding()
+                    }) {
+                        Text("Delete All Medication Schedules")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.red)
+                            .cornerRadius(8)
+                    }
+                    
+                    List {
+                        ForEach(medicationSchedules, id: \.self) { schedule in
+                            VStack(alignment: .leading) {
+                                Text(schedule.name ?? "Unknown")
+                                    .font(.headline)
+                                Text("Time: \(schedule.time, style: .time)")
+                                if schedule.repeatsDaily {
+                                    Text("Repeats daily")
+                                }
+                            }
+                            .padding()
+                        }
                     }
                 }
+                .onAppear {
+                    fetchMedicationSchedules()
+                }
+                .navigationTitle("rinse.")
             }
-            .onAppear {
-                fetchMedicationSchedules()
-            }
-            .tabItem {  
+            .tabItem {
                 Image(systemName: "pills")
                 Text("Medication Schedule")
             }
             
-            VStack {
-//                ProgressRingView(weeklyProgress: weeklyProgress, monthlyProgress: monthlyProgress)
-//                    .frame(width: 200, height: 200)
-                ProgressRingView(weeklyProgress: 0.75, monthlyProgress: 0.4)
-                    .frame(width: 200, height: 200)
+            NavigationView {
+                VStack {
+                    Spacer()
+                    //                ProgressRingView(weeklyProgress: weeklyProgress, monthlyProgress: monthlyProgress)
+                    //                    .frame(width: 200, height: 200)
+                    ProgressRingView(weeklyProgress: 0.75, monthlyProgress: 0.4)
+                        .frame(width: 200, height: 200)
+                        .padding()
+                    HStack {
+                        Text("Select Range:")
+                        Picker(selection: $selectedMonthRange, label: Text("Select Range")) {
+                            ForEach(1..<13) { month in
+                                Text("\(month) month\(month == 1 ? "" : "s")")
+                            }
+                        }
+                        .pickerStyle(MenuPickerStyle())
+                    }
+                    .padding()
+                    
+                    //                LineGraphView(data: weeklyComplianceData)
+                    //                    .padding(.horizontal)
+                    LineGraphView(data: [0.4, 0.7, 0.1, 0.6, 0.8, 0.2, 0.9])
+                        .frame(height: 200)
+                        .padding(.horizontal, 20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer()
+                }
+                .navigationTitle("rinse.")
             }
             .tabItem {
                 Image(systemName: "chart.pie")
                 Text("Data Visualization")
             }
             
-            VStack(spacing: 20) {
-                
-                Button(action: {
-                    bluetoothManager.manualLog(completion: updateLogs)
-                }) {
-                    Text("Manual Log")
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(8)
-                }
-                
-                Button(action: {
-                    bluetoothManager.deleteAllLogs()
-                    updateLogs()
-                }) {
-                    Text("Delete All Logs")
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.red)
-                        .cornerRadius(8)
-                }
-                
-                Button(action: {
-                    bluetoothManager.sendReminderSignal()
-                }) {
-                    Text("Send Reminder")
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.green)
-                        .cornerRadius(8)
-                }
-                
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 10) {
-                        ForEach(logs, id: \.self) { log in
-                            HStack {
-                                Text("\(log.source ?? "")")
-                                Spacer()
-                                Text("\(Date(timeIntervalSince1970: TimeInterval(log.timestamp)))")
-                            }
-                            .onAppear {
-                                print(log) // Add this line to check if logs have data
+            NavigationView {
+                VStack(spacing: 20) {
+                    
+                    Button(action: {
+                        bluetoothManager.manualLog(completion: updateLogs)
+                    }) {
+                        Text("Manual Log")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(8)
+                    }
+                    
+                    Button(action: {
+                        bluetoothManager.deleteAllLogs()
+                        updateLogs()
+                    }) {
+                        Text("Delete All Logs")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.red)
+                            .cornerRadius(8)
+                    }
+                    
+                    Button(action: {
+                        bluetoothManager.sendReminderSignal()
+                    }) {
+                        Text("Send Reminder")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.green)
+                            .cornerRadius(8)
+                    }
+                    
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 10) {
+                            ForEach(logs, id: \.self) { log in
+                                HStack {
+                                    Text("\(log.source ?? "")")
+                                    Spacer()
+                                    Text("\(Date(timeIntervalSince1970: TimeInterval(log.timestamp)))")
+                                }
+                                .onAppear {
+                                    print(log) // Add this line to check if logs have data
+                                }
                             }
                         }
                     }
+                    .padding()
+                    .overlay(
+                        Group {
+                            if bluetoothManager.isConnected {
+                                Circle()
+                                    .fill(Color.green)
+                                    .frame(width: 10, height: 10)
+                            }
+                        },
+                        alignment: .topLeading
+                    )
+                    .onAppear {
+                        logs = bluetoothManager.fetchLogs()
+                    }
+                    .onChange(of: bluetoothManager.logsChanged) { _ in
+                        updateLogs()
+                    }
                 }
-                .padding()
-                .overlay(
-                    Group {
-                        if bluetoothManager.isConnected {
-                            Circle()
-                                .fill(Color.green)
-                                .frame(width: 10, height: 10)
-                        }
-                    },
-                    alignment: .topLeading
-                )
-                .onAppear {
-                    logs = bluetoothManager.fetchLogs()
-                }
-                .onChange(of: bluetoothManager.logsChanged) { _ in
-                    updateLogs()
-                }
+                .navigationTitle("rinse.")
             }
             .tabItem {
                 Image(systemName: "chart.bar.xaxis")
                 Text("Logs")
             }
+            
         }
     }
     

@@ -15,6 +15,7 @@
 		2767ED0129E4C5930024A5D0 /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2767ECFF29E4C5930024A5D0 /* DataModel.xcdatamodeld */; };
 		2767ED0529E4CDF90024A5D0 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2767ED0429E4CDF90024A5D0 /* PersistenceController.swift */; };
 		2767ED0829E503B70024A5D0 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2767ED0729E503B70024A5D0 /* CoreData.framework */; };
+		2794CCF129E7404300FD862A /* LineGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2794CCF029E7404300FD862A /* LineGraphView.swift */; };
 		27B17FC929E69DCB00355A20 /* MedicationSchedule+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B17FC729E69DCB00355A20 /* MedicationSchedule+CoreDataClass.swift */; };
 		27B17FCA29E69DCB00355A20 /* MedicationSchedule+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B17FC829E69DCB00355A20 /* MedicationSchedule+CoreDataProperties.swift */; };
 		27E3F5A829E6F3E800C41FAA /* ProgressRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27E3F5A729E6F3E800C41FAA /* ProgressRingView.swift */; };
@@ -31,6 +32,7 @@
 		2767ED0029E4C5930024A5D0 /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
 		2767ED0429E4CDF90024A5D0 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		2767ED0729E503B70024A5D0 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		2794CCF029E7404300FD862A /* LineGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineGraphView.swift; sourceTree = "<group>"; };
 		27B17FC729E69DCB00355A20 /* MedicationSchedule+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MedicationSchedule+CoreDataClass.swift"; sourceTree = "<group>"; };
 		27B17FC829E69DCB00355A20 /* MedicationSchedule+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MedicationSchedule+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		27E3F5A729E6F3E800C41FAA /* ProgressRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRingView.swift; sourceTree = "<group>"; };
@@ -77,6 +79,7 @@
 				2767ECFB29E1500B0024A5D0 /* BluetoothManager.swift */,
 				2767ECEC29E149F60024A5D0 /* rinseApp.swift */,
 				2767ED0429E4CDF90024A5D0 /* PersistenceController.swift */,
+				2794CCF029E7404300FD862A /* LineGraphView.swift */,
 				27E3F5A729E6F3E800C41FAA /* ProgressRingView.swift */,
 				2767ECEE29E149F60024A5D0 /* ContentView.swift */,
 				2767ECF029E149FA0024A5D0 /* Assets.xcassets */,
@@ -172,6 +175,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27B17FC929E69DCB00355A20 /* MedicationSchedule+CoreDataClass.swift in Sources */,
+				2794CCF129E7404300FD862A /* LineGraphView.swift in Sources */,
 				27E3F5A829E6F3E800C41FAA /* ProgressRingView.swift in Sources */,
 				2767ECEF29E149F60024A5D0 /* ContentView.swift in Sources */,
 				2767ED0129E4C5930024A5D0 /* DataModel.xcdatamodeld in Sources */,
