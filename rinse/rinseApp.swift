@@ -24,8 +24,8 @@ struct RinseApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(bluetoothManager)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(bluetoothManager)
                 .onChange(of: scenePhase) { phase in
                     switch phase {
                     case .background, .inactive:

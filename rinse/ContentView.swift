@@ -19,7 +19,13 @@ struct ContentView: View {
         print("Logs updated")
     }
     
+    func fetchMedicationSchedules() {
+        medicationSchedules = bluetoothManager.fetchMedicationSchedules()
+    }
+    
     @State private var logs: [LogEntity] = []
+    @State private var medicationSchedules: [MedicationSchedule] = []
+
     
     // Add the following state properties for medication schedule input
     @State private var medicationName: String = ""
@@ -29,9 +35,10 @@ struct ContentView: View {
     // Add a function to save medication schedules
     func saveMedicationSchedule() {
         bluetoothManager.addMedicationSchedule(name: medicationName, time: medicationTime, repeatsDaily: repeatsDaily) {
+            fetchMedicationSchedules()
             print("Medication schedule saved with notification")
         }
-        
+
         medicationName = ""
         medicationTime = Date()
         repeatsDaily = false
@@ -51,7 +58,7 @@ struct ContentView: View {
                     .cornerRadius(8)
                     .padding()
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
-                Toggle(isOn: $repeatsDaily) { // Add this Toggle to let the user choose the repeat daily option
+                Toggle(isOn: $repeatsDaily) {
                     Text("Repeat daily")
                 }
                 .padding()
@@ -63,7 +70,9 @@ struct ContentView: View {
                         .cornerRadius(8)
                 }
                 Button(action: {
-                    bluetoothManager.deleteAllMedicationSchedules()
+                    bluetoothManager.deleteAllMedicationSchedules() {
+                        fetchMedicationSchedules()
+                    }
                 }) {
                     Text("Delete All Medication Schedules")
                         .foregroundColor(.white)
@@ -71,8 +80,24 @@ struct ContentView: View {
                         .background(Color.red)
                         .cornerRadius(8)
                 }
+
+                List {
+                    ForEach(medicationSchedules, id: \.self) { schedule in
+                        VStack(alignment: .leading) {
+                            Text(schedule.name ?? "Unknown")
+                                .font(.headline)
+                            Text("Time: \(schedule.time, style: .time)")
+                            if schedule.repeatsDaily {
+                                Text("Repeats daily")
+                            }
+                        }
+                        .padding()
+                    }
+                }
             }
-            
+            .onAppear {
+                fetchMedicationSchedules()
+            }
             .tabItem {
                 Image(systemName: "pills")
                 Text("Medication Schedule")

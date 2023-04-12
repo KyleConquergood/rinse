@@ -9,6 +9,7 @@ import Foundation
 import CoreBluetooth
 import CoreData
 import UserNotifications
+import Combine
 
 struct Log {
     var timestamp: Int
@@ -29,6 +30,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     private let currentTimeCharacteristicUUID = CBUUID(string: "2A39")
     private let syncTimeCharacteristicUUID = CBUUID(string: "2A3A") // New characteristic for sync time
     private let reminderCharacteristicUUID = CBUUID(string: "2A3B") // custom UUID for the reminder characteristic
+    private var cancellables = Set<AnyCancellable>()
 
     // Published sensor data and timestamp
     @Published var sensorData: UInt32 = 0
@@ -45,6 +47,20 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
         requestNotificationPermission()
+        _logsChanged.projectedValue.receive(on: DispatchQueue.main).sink { _ in self.logs = self.fetchLogs() }.store(in: &cancellables)
+        
+        // Fetch and print logs and medication schedules
+        let fetchedLogs = fetchLogs()
+        print("Stored logs:")
+        fetchedLogs.forEach { log in
+            print("Timestamp: \(log.timestamp), Source: \(log.source ?? "")")
+        }
+        
+        let fetchedSchedules = fetchMedicationSchedules()
+        print("Stored medication schedules:")
+        fetchedSchedules.forEach { schedule in
+            print("Name: \(schedule.name ?? ""), Time: \(schedule.time), Repeats daily: \(schedule.repeatsDaily)")
+        }
     }
     
     // Central Manager state update
@@ -133,44 +149,51 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
     }
     
     func addLog(log: Log, completion: @escaping () -> Void) {
-        PersistenceController.shared.container.performBackgroundTask { backgroundContext in
-            let logEntity = LogEntity(context: backgroundContext)
-            logEntity.timestamp = Int64(log.timestamp)
-            logEntity.source = log.source
+        let logEntity = LogEntity(context: self.managedObjectContext)
+        logEntity.timestamp = Int64(log.timestamp)
+        logEntity.source = log.source
 
-            do {
-                try backgroundContext.save()
-                print("Log saved: \(logEntity)")
+        do {
+            try self.managedObjectContext.save()
+            print("Log saved: \(logEntity)")
 
-                DispatchQueue.main.async {
-                    completion() // Add this line
-                }
-            } catch {
-                print("Error saving log:", error.localizedDescription)
+            DispatchQueue.main.async {
+                completion()
             }
-            print("Auto log registered.")
+        } catch {
+            print("Error saving log:", error.localizedDescription)
         }
+        print("Auto log registered.")
     }
     
 
     func manualLog(completion: (() -> Void)? = nil) {
-        PersistenceController.shared.container.performBackgroundTask { backgroundContext in
-            let log = LogEntity(context: backgroundContext)
-            log.source = "Manual"
-            log.timestamp = Int64(Date().timeIntervalSince1970)
+        let log = LogEntity(context: self.managedObjectContext)
+        log.source = "Manual"
+        log.timestamp = Int64(Date().timeIntervalSince1970)
 
-            do {
-                try backgroundContext.save()
-                print("Log saved:", log)
+        do {
+            try self.managedObjectContext.save()
+            print("Log saved:", log)
 
-                DispatchQueue.main.async {
-                    completion?()
+            DispatchQueue.main.async {
+                let fetchedLogs = self.fetchLogs()
+                print("Stored logs:")
+                fetchedLogs.forEach { log in
+                    print("Timestamp: \(log.timestamp), Source: \(log.source ?? "")")
                 }
-            } catch {
-                print("Error saving log:", error.localizedDescription)
+                
+                let fetchedSchedules = self.fetchMedicationSchedules()
+                print("Stored medication schedules:")
+                fetchedSchedules.forEach { schedule in
+                    print("Name: \(schedule.name ?? ""), Time: \(schedule.time), Repeats daily: \(schedule.repeatsDaily)")
+                }
+                completion?()
             }
-            print("Manual log registered.")
+        } catch {
+            print("Error saving log:", error.localizedDescription)
         }
+        print("Manual log registered.")
     }
     
     func fetchLogs() -> [LogEntity] {
@@ -194,6 +217,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
 
             do {
                 try backgroundContext.execute(deleteRequest)
+                try backgroundContext.save()
                 DispatchQueue.main.async {
                     self.logsChanged.toggle()
                 }
@@ -232,11 +256,12 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
 
             do {
                 try backgroundContext.save()
-                print("Medication schedule saved: Name: \(medicationSchedule.name ?? ""), Time: \(medicationSchedule.time)") // Print the name and time of the notification
+                let medicationTime = medicationSchedule.time // Extract the time value here
+                print("Medication schedule saved: Name: \(medicationSchedule.name ?? ""), Time: \(medicationTime)") // Use the extracted time value
 
                 DispatchQueue.main.async {
+                    self.scheduleNotification(for: medicationSchedule, time: medicationTime) // Schedule the notification
                     completion?()
-                    self.scheduleNotification(for: medicationSchedule) // Schedule the notification
                 }
             } catch {
                 print("Error saving medication schedule:", error.localizedDescription)
@@ -257,7 +282,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         return []
     }
     
-    func deleteAllMedicationSchedules() {
+    func deleteAllMedicationSchedules(completion: (() -> Void)? = nil) {
         PersistenceController.shared.container.performBackgroundTask { backgroundContext in
             let fetchRequest: NSFetchRequest<NSFetchRequestResult> = MedicationSchedule.fetchRequest()
 
@@ -265,7 +290,12 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
 
             do {
                 try backgroundContext.execute(batchDeleteRequest)
+                try backgroundContext.save()
                 print("All medication schedules deleted")
+                
+                DispatchQueue.main.async {
+                    completion?()
+                }
             } catch {
                 print("Error deleting all medication schedules:", error.localizedDescription)
             }
@@ -282,23 +312,46 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         }
     }
     
-    func scheduleNotification(for medicationSchedule: MedicationSchedule) {
+    func scheduleNotification(for medicationSchedule: MedicationSchedule, time: Date) {
         let content = UNMutableNotificationContent()
         content.title = "Medication Reminder"
         content.body = "It's time to take \(medicationSchedule.name ?? "your medication")"
         content.sound = UNNotificationSound.default
-        
-        let components = Calendar.current.dateComponents([.hour, .minute], from: medicationSchedule.time)
-        
+
+        let components = Calendar.current.dateComponents([.hour, .minute], from: time)
+
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: medicationSchedule.repeatsDaily)
-        
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-        
+
+        let identifier = UUID().uuidString // Unique identifier for the notification
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Error scheduling notification: \(error.localizedDescription)")
             } else {
-                print("Notification scheduled for \(medicationSchedule.name ?? "medication") at \(medicationSchedule.time)")
+                print("Notification scheduled for \(medicationSchedule.name ?? "medication") at \(time)")
+            }
+        }
+
+        // Schedule the reminder signal check
+        scheduleReminderSignal(for: identifier, time: time)
+    }
+    
+    func scheduleReminderSignal(for notificationIdentifier: String, time: Date) {
+        let timeInterval = time.timeIntervalSinceNow
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval) {
+            self.checkNotificationDelivery(for: notificationIdentifier)
+        }
+    }
+    
+    func checkNotificationDelivery(for notificationIdentifier: String) {
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            if requests.contains(where: { $0.identifier == notificationIdentifier }) {
+                // If the notification is still pending, reschedule the check
+                self.scheduleReminderSignal(for: notificationIdentifier, time: Date().addingTimeInterval(1))
+            } else {
+                // If the notification is not pending, send the reminder signal
+                self.sendReminderSignal()
             }
         }
     }
