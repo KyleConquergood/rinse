@@ -219,9 +219,7 @@ struct ContentView: View {
             NavigationView {
                 VStack {
                     Spacer()
-                    //                ProgressRingView(weeklyProgress: weeklyProgress, monthlyProgress: monthlyProgress)
-                    //                    .frame(width: 200, height: 200)
-                    ProgressRingView(weeklyProgress: 0.75, monthlyProgress: 0.4)
+                    ProgressRingView(weeklyProgress: weeklyProgress, monthlyProgress: monthlyProgress)
                         .frame(width: 200, height: 200)
                         .padding()
                     HStack {
@@ -235,9 +233,7 @@ struct ContentView: View {
                     }
                     .padding()
                     
-                    //                LineGraphView(data: weeklyComplianceData)
-                    //                    .padding(.horizontal)
-                    LineGraphView(data: [0.4, 0.7, 0.1, 0.6, 0.8, 0.2, 0.9])
+                    LineGraphView(data: weeklyComplianceData)
                         .frame(height: 200)
                         .padding(.horizontal, 20)
                         .frame(maxWidth: .infinity, alignment: .leading)
